@@ -18,12 +18,13 @@ import edu.wpi.first.wpilibj.XboxController;
  */
 public class Robot extends TimedRobot {
 
-  // 1. Define the motor (Ensure the ID matches Tuner X)
+  // defining motor (id must match phoenix tuner)
     private final TalonFXS minionMotor = new TalonFXS(0); 
     
-    // 2. Create the control request for "Percentage" (Duty Cycle)
+    // defining base rpm -1 to 1 decimal
     private final DutyCycleOut percentOutput = new DutyCycleOut(0);
 
+    //defining controller
     private final XboxController controller = new XboxController(0);
 
   private Command m_autonomousCommand;
