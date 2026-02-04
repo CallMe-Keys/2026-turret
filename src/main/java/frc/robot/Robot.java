@@ -20,7 +20,8 @@ public class Robot extends TimedRobot {
 
   // defining motor (id must match phoenix tuner)
     private final TalonFXS minionMotor = new TalonFXS(0); 
-    
+    private final TalonFXS krakenMotor = new TalonFXS(1); 
+
     // defining base rpm -1 to 1 decimal
     private final DutyCycleOut percentOutput = new DutyCycleOut(0);
 
@@ -91,24 +92,24 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     
-    // A = half speed forward. B = half speed reverse
-    // X = full speed forward. Y = full speed reverse
-        double speed = 0.0;
+    // A = half speed forward minion. B = half speed reverse minion
+    // X = half speed forward kraken. Y = half speed reverse kraken
         if (controller.getAButton()) {
-          speed = 0.5;
+          minionMotor.setControl(percentOutput.withOutput(0.5));
         } else if (controller.getBButton()) {
-          speed = -0.5;
+          minionMotor.setControl(percentOutput.withOutput(-0.5));
         } else if (controller.getXButton()) {
-          speed = 1;
+          krakenMotor.setControl(percentOutput.withOutput(0.5));
         } else if (controller.getYButton()) {
-          speed = -1;
+          krakenMotor.setControl(percentOutput.withOutput(-0.5));
         } else {
-          speed = 0.0;
+          krakenMotor.setControl(percentOutput.withOutput(0.0));
+          minionMotor.setControl(percentOutput.withOutput(0.0));
         }
 
         // 3. Send the command to the motor
         // This sets the percentage of battery voltage applied
-        minionMotor.setControl(percentOutput.withOutput(speed));
+        
   }
 
   @Override
