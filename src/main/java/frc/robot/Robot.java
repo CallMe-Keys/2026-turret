@@ -8,6 +8,8 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import com.ctre.phoenix6.hardware.TalonFXS;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.configs.TalonFXSConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import edu.wpi.first.wpilibj.XboxController;
 
@@ -37,6 +39,12 @@ public class Robot extends TimedRobot {
    * initialization code.
    */
   public Robot() {
+    //this turns on brakes for kraken and minion as default
+    TalonFXSConfiguration configs = new TalonFXSConfiguration();
+    configs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    minionMotor.getConfigurator().apply(configs);
+    krakenMotor.getConfigurator().apply(configs);
+
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
@@ -92,25 +100,23 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     
-    // A = half speed forward minion. B = half speed reverse minion
-    // X = half speed forward kraken. Y = half speed reverse kraken
-        if (controller.getAButton()) {
-          minionMotor.setControl(percentOutput.withOutput(0.5));
-        } else if (controller.getBButton()) {
-          minionMotor.setControl(percentOutput.withOutput(-0.5));
-        } else if (controller.getXButton()) {
-          krakenMotor.setControl(percentOutput.withOutput(0.5));
-        } else if (controller.getYButton()) {
-          krakenMotor.setControl(percentOutput.withOutput(-0.5));
+//turret teleop controls CHANGE FOR OPERATOR
+
+        // left joystick X axis = turret spinning.
+          if (Math.abs(controller.getLeftX()) < 0.1) {
+        // because of config, it should brake when value 0 is called.
+          minionMotor.set(0); 
+        } else {
+        minionMotor.set(controller.getLeftX());
+        } 
+        // press x to run shooter = half speed forward kraken.
+         if (controller.getAButton()) {
+          // 0.625 for inside lab, 0.75 for field testing
+          krakenMotor.setControl(percentOutput.withOutput(0.625));
         } else {
           krakenMotor.setControl(percentOutput.withOutput(0.0));
-          minionMotor.setControl(percentOutput.withOutput(0.0));
         }
-
-        // 3. Send the command to the motor
-        // This sets the percentage of battery voltage applied
-        
-  }
+    }
 
   @Override
   public void testInit() {
