@@ -5,7 +5,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 
 /** An example command that uses an example subsystem. */
 public class ExampleCommand extends Command {
-  @SuppressWarnings("PMD.UnusedPrivateField")
+  @SuppressWarnings({ "PMD.UnusedPrivateField", "unused" })
   private final ExampleSubsystem m_subsystem;
 
   /**
