@@ -9,6 +9,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import com.ctre.phoenix6.hardware.TalonFXS;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+//import com.ctre.phoenix6.signals.ForwardLimitTypeValue;
+//import com.ctre.phoenix6.signals.ReverseLimitTypeValue;
 import com.ctre.phoenix6.configs.TalonFXSConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import edu.wpi.first.wpilibj.XboxController;
@@ -47,12 +49,18 @@ public class Robot extends TimedRobot {
       shooterConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
       turretConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-      //enable physical limit switch
-      //turretConfig.HardwareLimitSwitch.ForwardLimitSwitchEnable = true;
-      //turretConfig.HardwareLimitSwitch.ForwardLimitSwitchSource = 
+      /* EXPERIMENTAL limit switch 
+    //enable physical limit switch
+      turretConfig.HardwareLimitSwitch.ForwardLimitEnable = true;
+      turretConfig.HardwareLimitSwitch.ForwardLimitType = ForwardLimitTypeValue.NormallyOpen;
+      turretConfig.HardwareLimitSwitch.ReverseLimitEnable = true;
+      turretConfig.HardwareLimitSwitch.ReverseLimitType = ReverseLimitTypeValue.NormallyOpen;
+
     //sets forward soft limit to 100 rotation for turret
-      //turretConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-      //turretConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 100;
+      turretConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
+      turretConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 100;
+      turretConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
+      turretConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = -100; */
 
     //applys configs to motors
       krakenShooterMotor.getConfigurator().apply(shooterConfig);
