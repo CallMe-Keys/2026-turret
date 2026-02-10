@@ -21,8 +21,8 @@ import edu.wpi.first.wpilibj.XboxController;
 public class Robot extends TimedRobot {
 
   // defining motor (id must match phoenix tuner)
-    private final TalonFXS minionMotor = new TalonFXS(0); 
-    private final TalonFXS krakenMotor = new TalonFXS(1); 
+    private final TalonFXS neo550TurretMotor = new TalonFXS(0); 
+    private final TalonFXS krakenShooterMotor = new TalonFXS(1); 
 
     // defining base rpm -1 to 1 decimal
     private final DutyCycleOut percentOutput = new DutyCycleOut(0);
@@ -39,11 +39,25 @@ public class Robot extends TimedRobot {
    * initialization code.
    */
   public Robot() {
-    //this turns on brakes for kraken and minion as default
-    TalonFXSConfiguration configs = new TalonFXSConfiguration();
-    configs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    minionMotor.getConfigurator().apply(configs);
-    krakenMotor.getConfigurator().apply(configs);
+    //this makes config for kraken and 550
+      TalonFXSConfiguration shooterConfig = new TalonFXSConfiguration();
+      TalonFXSConfiguration turretConfig = new TalonFXSConfiguration();
+    
+    //applys brake as neutral to both motors
+      shooterConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+      turretConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+
+      //enable physical limit switch
+      //turretConfig.HardwareLimitSwitch.ForwardLimitSwitchEnable = true;
+      //turretConfig.HardwareLimitSwitch.ForwardLimitSwitchSource = 
+    //sets forward soft limit to 100 rotation for turret
+      //turretConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
+      //turretConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 100;
+
+    //applys configs to motors
+      krakenShooterMotor.getConfigurator().apply(shooterConfig);
+      neo550TurretMotor.getConfigurator().apply(turretConfig);
+
 
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
@@ -102,19 +116,37 @@ public class Robot extends TimedRobot {
     
 //turret teleop controls CHANGE FOR OPERATOR
 
-        // left joystick X axis = turret spinning.
-          if (Math.abs(controller.getLeftX()) < 0.1) {
+        // *EXPERIMENTAL* left joystick X axis = turret spinning.
+          //if (Math.abs(controller.getLeftX()) < 0.1) {
         // because of config, it should brake when value 0 is called.
-          minionMotor.set(0); 
+          //neo550TurretMotor.set(0); 
+        //} else {
+        //neo550TurretMotor.set(controller.getLeftX());
+        //} 
+
+                // press y to run turret = 5% neo 550 turret.
+         if (controller.getYButton()) {
+          // between 5 to 10 percent speed for turret
+          neo550TurretMotor.setControl(percentOutput.withOutput(0.05));
         } else {
-        minionMotor.set(controller.getLeftX());
-        } 
+          neo550TurretMotor.setControl(percentOutput.withOutput(0.0));
+        }
+
+                // press x to run turret = reverse 5% neo 550 turret.
+         if (controller.getXButton()) {
+          // between 5 to 10 percent reverse speed for turret
+          neo550TurretMotor.setControl(percentOutput.withOutput(-0.05));
+        } else {
+          neo550TurretMotor.setControl(percentOutput.withOutput(0.0));
+        }
+
+
         // press x to run shooter = half speed forward kraken.
          if (controller.getAButton()) {
           // 0.625 for inside lab, 0.75 for field testing
-          krakenMotor.setControl(percentOutput.withOutput(0.625));
+          krakenShooterMotor.setControl(percentOutput.withOutput(0.625));
         } else {
-          krakenMotor.setControl(percentOutput.withOutput(0.0));
+          krakenShooterMotor.setControl(percentOutput.withOutput(0.0));
         }
     }
 
