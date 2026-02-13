@@ -7,13 +7,16 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj.XboxController;
+
 import com.ctre.phoenix6.hardware.TalonFXS;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 //import com.ctre.phoenix6.signals.ForwardLimitTypeValue;
 //import com.ctre.phoenix6.signals.ReverseLimitTypeValue;
 import com.ctre.phoenix6.configs.TalonFXSConfiguration;
-import com.ctre.phoenix6.controls.DutyCycleOut;
-import edu.wpi.first.wpilibj.XboxController;
+
+
+
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -22,12 +25,14 @@ import edu.wpi.first.wpilibj.XboxController;
  */
 public class Robot extends TimedRobot {
 
+  //define turret speeds
+    double turretLeftSpeed = 0.1;
+    double turretRightSpeed = -0.1;
+    double shooterSpeed = 0.625; // 0.625 for inside lab, 0.75 for field testing
+
   // defining motor (id must match phoenix tuner)
     private final TalonFXS neo550TurretMotor = new TalonFXS(0); 
     private final TalonFXS krakenShooterMotor = new TalonFXS(1); 
-
-    // defining base rpm -1 to 1 decimal
-    private final DutyCycleOut percentOutput = new DutyCycleOut(0);
 
     //defining controller
     private final XboxController controller = new XboxController(0);
@@ -131,30 +136,27 @@ public class Robot extends TimedRobot {
         //} else {
         //neo550TurretMotor.set(controller.getLeftX());
         //} 
-
+    
                 // press y to run turret = 5% neo 550 turret.
-         if (controller.getYButton()) {
-          // between 5 to 10 percent speed for turret
-          neo550TurretMotor.setControl(percentOutput.withOutput(0.05));
-        } else {
-          neo550TurretMotor.setControl(percentOutput.withOutput(0.0));
-        }
-
-                // press x to run turret = reverse 5% neo 550 turret.
          if (controller.getXButton()) {
-          // between 5 to 10 percent reverse speed for turret
-          neo550TurretMotor.setControl(percentOutput.withOutput(-0.05));
-        } else {
-          neo550TurretMotor.setControl(percentOutput.withOutput(0.0));
-        }
+                // between 5 to 10 percent left speed for turret
+          neo550TurretMotor.set(turretLeftSpeed);
 
+                // press b to run turret = reverse 5% neo 550 turret.
+        } else if (controller.getYButton()) {
+                // between 5 to 10 percent right speed for turret
+          neo550TurretMotor.set(turretRightSpeed);
+
+        } else {
+          neo550TurretMotor.set(0.0);
+        }
 
         // press x to run shooter = half speed forward kraken.
          if (controller.getAButton()) {
           // 0.625 for inside lab, 0.75 for field testing
-          krakenShooterMotor.setControl(percentOutput.withOutput(0.625));
+          krakenShooterMotor.set(shooterSpeed);
         } else {
-          krakenShooterMotor.setControl(percentOutput.withOutput(0.0));
+          krakenShooterMotor.set(0.0);
         }
     }
 
