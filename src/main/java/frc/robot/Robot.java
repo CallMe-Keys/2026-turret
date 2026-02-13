@@ -130,12 +130,12 @@ public class Robot extends TimedRobot {
 //turret teleop controls CHANGE FOR OPERATOR
 
         // *EXPERIMENTAL* left joystick X axis = turret spinning.
-          //if (Math.abs(controller.getLeftX()) < 0.1) {
+          if (Math.abs(controller.getLeftX()) < 0.1) {
         // because of config, it should brake when value 0 is called.
-          //neo550TurretMotor.set(0); 
-        //} else {
-        //neo550TurretMotor.set(controller.getLeftX());
-        //} 
+          neo550TurretMotor.set(0); 
+        } else {
+          neo550TurretMotor.set(controller.getLeftX() * 0.1);
+        } 
     
                 // press y to run turret = 5% neo 550 turret.
          if (controller.getXButton()) {
