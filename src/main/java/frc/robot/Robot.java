@@ -51,7 +51,7 @@ public class Robot extends TimedRobot {
       TalonFXSConfiguration turretConfig = new TalonFXSConfiguration();
     
     //applys brake as neutral to both motors
-      shooterConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+      shooterConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
       turretConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
       /* EXPERIMENTAL limit switch 
