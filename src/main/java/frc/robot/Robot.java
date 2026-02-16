@@ -4,16 +4,16 @@
 
 package frc.robot;
 
+import frc.robot.subsystems.ShooterLogic;
+import frc.robot.subsystems.TurretLogic;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj.XboxController;
 
-import com.ctre.phoenix6.hardware.TalonFXS;
-import com.ctre.phoenix6.signals.NeutralModeValue;
 //import com.ctre.phoenix6.signals.ForwardLimitTypeValue;
 //import com.ctre.phoenix6.signals.ReverseLimitTypeValue;
-import com.ctre.phoenix6.configs.TalonFXSConfiguration;
 
 
 
@@ -25,17 +25,14 @@ import com.ctre.phoenix6.configs.TalonFXSConfiguration;
  */
 public class Robot extends TimedRobot {
 
-  //define turret speeds
-    double turretLeftSpeed = 0.1;
-    double turretRightSpeed = -0.1;
-    double shooterSpeed = 0.625; // 0.625 for inside lab, 0.75 for field testing
-
-  // defining motor (id must match phoenix tuner)
-    private final TalonFXS neo550TurretMotor = new TalonFXS(0); 
-    private final TalonFXS krakenShooterMotor = new TalonFXS(1); 
-
-    //defining controller
+  //defining controller
     private final XboxController controller = new XboxController(0);
+
+  //define the turret subsystem class
+    TurretLogic turret = new TurretLogic();
+  
+  //define the shooter subsystem class
+    ShooterLogic shooter = new ShooterLogic();
 
   private Command m_autonomousCommand;
 
@@ -46,13 +43,6 @@ public class Robot extends TimedRobot {
    * initialization code.
    */
   public Robot() {
-    //this makes config for kraken and 550
-      TalonFXSConfiguration shooterConfig = new TalonFXSConfiguration();
-      TalonFXSConfiguration turretConfig = new TalonFXSConfiguration();
-    
-    //applys brake as neutral to both motors
-      shooterConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-      turretConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
       /* EXPERIMENTAL limit switch 
     //enable physical limit switch
@@ -66,10 +56,6 @@ public class Robot extends TimedRobot {
       turretConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 100;
       turretConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
       turretConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = -100; */
-
-    //applys configs to motors
-      krakenShooterMotor.getConfigurator().apply(shooterConfig);
-      neo550TurretMotor.getConfigurator().apply(turretConfig);
 
 
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
@@ -121,45 +107,70 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+
+      //limelight initialization
+      
+      LimelightHelpers.setPipelineIndex("limelight-llone", 0); // searching for april tags pipeline
+      
   }
 
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
     
-//turret teleop controls CHANGE FOR OPERATOR
+      //turret teleop controls CHANGE FOR OPERATOR
 
-        // *EXPERIMENTAL* left joystick X axis = turret spinning.
+        /*  *EXPERIMENTAL* left joystick X axis = turret spinning.
           if (Math.abs(controller.getLeftX()) < 0.1) {
         // because of config, it should brake when value 0 is called.
-          neo550TurretMotor.set(0); 
+          turret.neo550Motor.set(0); 
         } else {
-          neo550TurretMotor.set(controller.getLeftX() * 0.1);
+          turret.neo550Motor.set(controller.getLeftX() * 0.1);
         } 
     
                 // press y to run turret = 5% neo 550 turret.
          if (controller.getXButton()) {
                 // between 5 to 10 percent left speed for turret
-          neo550TurretMotor.set(turretLeftSpeed);
+          turret.neo550Motor.set(turret.LeftSpeed);
 
                 // press b to run turret = reverse 5% neo 550 turret.
         } else if (controller.getYButton()) {
                 // between 5 to 10 percent right speed for turret
-          neo550TurretMotor.set(turretRightSpeed);
+          turret.neo550Motor.set(turret.RightSpeed);
 
         } else {
-          neo550TurretMotor.set(0.0);
-        }
+          turret.neo550Motor.set(0.0);
+        } */
 
         // press x to run shooter = half speed forward kraken.
          if (controller.getAButton()) {
           // 0.625 for inside lab, 0.75 for field testing
-          krakenShooterMotor.set(shooterSpeed);
+          shooter.krakenMotor.set(shooter.Speed);
         } else {
-          krakenShooterMotor.set(0.0);
+          shooter.krakenMotor.set(0.0);
         }
+
+        //limelight aim call
+
+        double currentID = LimelightHelpers.getFiducialID("limelight-llone");
+        double ty = LimelightHelpers.getTY("limelight-llone");
+
+          if (currentID == 18) {
+            // Just pass the error (ty) to the subsystem
+            turret.calculateAndMove(ty); 
+          } else {
+            turret.stop();
+
+            double id = LimelightHelpers.getFiducialID("limelight-llone");
+            double error = LimelightHelpers.getTY("limelight-llone");
+            boolean tv = LimelightHelpers.getTV("limelight-llone");
+            ty = NetworkTableInstance.getDefault().getTable("limelight-llone").getEntry("ty").getDouble(0);
+
+            System.out.println("See Target: " + tv + " | ID: " + id + " | ty: " + ty + " | error: " + error);
     }
 
+  }
+ 
   @Override
   public void testInit() {
     // Cancels all running commands at the start of test mode.
