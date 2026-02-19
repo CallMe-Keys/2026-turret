@@ -3,62 +3,47 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.configs.TalonFXSConfiguration;
 import com.ctre.phoenix6.hardware.TalonFXS;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.wpilibj.Timer;
+
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.networktables.NetworkTableInstance;
 
 public class TurretLogic {
-    // define motor and timer
-    public final TalonFXS neo550Motor = new TalonFXS(0); 
-    private final Timer timer = new Timer();
+    // define motor
+    public final TalonFXS neo550Motor = new TalonFXS(0);
 
-    public double LeftSpeed = 0.1;
-    public double RightSpeed = -0.1;
-
-    // constants, must be outside loop
-    private double lastError = 0;
-    private double lastTime = 0;
-
-    private double kP = 0.05; // note, fine tune these constants
-    private double kD = 0.00;
-
-    public TurretLogic() {
-        //config and timer both need to happen only once
-        TalonFXSConfiguration turretConfig = new TalonFXSConfiguration();
-        turretConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        neo550Motor.getConfigurator().apply(turretConfig);
-        
-        timer.start();
-    }
-
-
-    public void calculateAndMove(double error) {
-        double currentTime = timer.get();
-        double deltaTime = currentTime - lastTime;
-        
-        double pTerm = error * kP;
-        double dTerm = 0;
-
-        if (deltaTime > 0) {
-            dTerm = (error - lastError) / deltaTime * kD;
+        public TurretLogic() {
+            //config and timer both need to happen only once
+            TalonFXSConfiguration turretConfig = new TalonFXSConfiguration();
+            turretConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+            neo550Motor.getConfigurator().apply(turretConfig);
         }
 
-        // Apply power
-        double power = pTerm + dTerm; 
+
+        //limelight code
+                //constants
+            double kP = 0.025;
+            double kI = 0.0;
+            double kD = 0.001;
+
+                //define PID
+            PIDController turretPD = new PIDController(kP, kI, kD);
         
-        // Use a small deadband to stop jitter
-        if (Math.abs(error) < 0.2) {
-            neo550Motor.set(0);
-        } else {
-            // Clamp and set
-            double clampedPower = Math.max(-0.2, Math.min(0.2, power));
-            neo550Motor.set(clampedPower);
+                public void track() {
+            double ty = NetworkTableInstance.getDefault().getTable("limelight-turret").getEntry("ty").getDouble(0);
+
+                //set ty to go to 0
+            double motorOutput = turretPD.calculate(ty, 0);
+
+                //apply speed with safety clamp and deadband
+            if (Math.abs(ty) < 1) {
+                neo550Motor.set(0);
+            } else {
+                neo550Motor.set(MathUtil.clamp(motorOutput, -0.1, 0.1));
+            }
         }
 
-        // Save values for next loop
-        lastError = error;
-        lastTime = currentTime;
-    }
-
-    public void stop() {
-        neo550Motor.set(0);
-    }
+            public void stop() {
+                neo550Motor.set(0);
+            }
 }

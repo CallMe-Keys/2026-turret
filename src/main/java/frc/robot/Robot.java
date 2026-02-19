@@ -6,11 +6,9 @@ package frc.robot;
 
 import frc.robot.subsystems.ShooterLogic;
 import frc.robot.subsystems.TurretLogic;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj.XboxController;
 
 //import com.ctre.phoenix6.signals.ForwardLimitTypeValue;
 //import com.ctre.phoenix6.signals.ReverseLimitTypeValue;
@@ -25,13 +23,8 @@ import edu.wpi.first.wpilibj.XboxController;
  */
 public class Robot extends TimedRobot {
 
-  //defining controller
-    private final XboxController controller = new XboxController(0);
-
-  //define the turret subsystem class
+  //define the subsystems
     TurretLogic turret = new TurretLogic();
-  
-  //define the shooter subsystem class
     ShooterLogic shooter = new ShooterLogic();
 
   private Command m_autonomousCommand;
@@ -43,6 +36,9 @@ public class Robot extends TimedRobot {
    * initialization code.
    */
   public Robot() {
+
+      //limelight pipeline initialization
+    LimelightHelpers.setPipelineIndex("limelight-turret", 0); // searching for april tags pipeline
 
       /* EXPERIMENTAL limit switch 
     //enable physical limit switch
@@ -107,10 +103,6 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-
-      //limelight initialization
-      
-      LimelightHelpers.setPipelineIndex("limelight-llone", 0); // searching for april tags pipeline
       
   }
 
@@ -142,31 +134,19 @@ public class Robot extends TimedRobot {
           turret.neo550Motor.set(0.0);
         } */
 
-        // press x to run shooter = half speed forward kraken.
-         if (controller.getAButton()) {
-          // 0.625 for inside lab, 0.75 for field testing
-          shooter.krakenMotor.set(shooter.Speed);
-        } else {
-          shooter.krakenMotor.set(0.0);
-        }
+            // hold x to run shooter (kraken)
+        shooter.holdShoot();
+            // press b to run shooter (kraken) and y to stop
+        shooter.pressShoot();
 
-        //limelight aim call
-
-        double currentID = LimelightHelpers.getFiducialID("limelight-llone");
-        double ty = LimelightHelpers.getTY("limelight-llone");
+            //limelight aim call
+        double currentID = LimelightHelpers.getFiducialID("limelight-turret");
 
           if (currentID == 18) {
             // Just pass the error (ty) to the subsystem
-            turret.calculateAndMove(ty); 
+            turret.track(); 
           } else {
             turret.stop();
-
-            double id = LimelightHelpers.getFiducialID("limelight-llone");
-            double error = LimelightHelpers.getTY("limelight-llone");
-            boolean tv = LimelightHelpers.getTV("limelight-llone");
-            ty = NetworkTableInstance.getDefault().getTable("limelight-llone").getEntry("ty").getDouble(0);
-
-            System.out.println("See Target: " + tv + " | ID: " + id + " | ty: " + ty + " | error: " + error);
     }
 
   }
