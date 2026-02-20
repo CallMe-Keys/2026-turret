@@ -22,7 +22,7 @@ public class ShooterLogic {
     public ShooterLogic() {
         //config needs to happen only once
             TalonFXSConfiguration shooterConfig = new TalonFXSConfiguration();
-            shooterConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+            shooterConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
             krakenMotor.getConfigurator().apply(shooterConfig);
     }
 
